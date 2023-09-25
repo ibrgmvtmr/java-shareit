@@ -24,11 +24,4 @@ public class ErrorHandler {
     public ErrorResponse DataAlreadyExistExceptionHandler(DataAlreadyExistException alreadyEmailExistException) {
         return new ErrorResponse(alreadyEmailExistException.getMessage());
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse NullException(NullException NullException) {
-        return new ErrorResponse(NullException.getMessage());
-    }
-
 }
