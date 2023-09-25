@@ -21,7 +21,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse DataAlreadyExistExceptionHandler(DataAlreadyExistException alreadyEmailExistException) {
+    public ErrorResponse dataAlreadyExistExceptionHandler(DataAlreadyExistException alreadyEmailExistException) {
         return new ErrorResponse(alreadyEmailExistException.getMessage());
     }
 }
