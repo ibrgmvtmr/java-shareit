@@ -8,6 +8,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMappers;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,39 +20,52 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public List<Item> getItems(Long userId) {
-        return itemRepository.getItems().stream().filter(e -> Objects.equals(e.getOwner(), userId)).collect(Collectors.toList());
+    public List<ItemDto> getItems(Long userId) {
+        return itemRepository.getItems().stream()
+                .filter(e -> Objects.equals(e.getOwner(), userId))
+                .map(ItemMappers::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Item getItem(Long id) {
+    public ItemDto getItem(Long id) {
         checkItemId(id);
-        return itemRepository.getItem(id);
+        return ItemMappers.toItemDto(itemRepository.getItem(id));
     }
 
+
     @Override
-    public Item createItem(Item item, Long userId) {
+    public ItemDto createItem(ItemDto itemDto, Long userId) {
+        if (Objects.isNull(userRepository.getUser(userId))) {
+            throw new NotFoundException("пользователь с таким id не найден");
+        }
+        Item item = ItemMappers.toItem(itemDto);
         item.setOwner(userId);
-        return itemRepository.createItem(item);
+        Item createdItem = itemRepository.createItem(item);
+        return ItemMappers.toItemDto(createdItem);
     }
 
     @Override
-    public Item updateItem(Item item, Long userId) {
-        validation(userId, item.getId());
+    public ItemDto updateItem(ItemDto itemDto, Long userId) {
+        validation(userId, itemDto.getId());
+        Item item = ItemMappers.toItem(itemDto);
 
-        Item item1 = itemRepository.getItem(item.getId());
-        if (Objects.nonNull(item.getName())) {
-            item1.setName(item.getName());
+        Item item1 = itemRepository.getItem(itemDto.getId());
+        if (Objects.nonNull(itemDto.getName())) {
+            item1.setName(itemDto.getName());
         }
-        if (Objects.nonNull(item.getDescription())) {
-            item1.setDescription(item.getDescription());
+        if (Objects.nonNull(itemDto.getDescription())) {
+            item1.setDescription(itemDto.getDescription());
         }
-        if (Objects.nonNull(item.getIsAvailable())) {
-            item1.setIsAvailable(item.getIsAvailable());
+        if (Objects.nonNull(itemDto.getAvailable())) {
+            item1.setIsAvailable(itemDto.getAvailable());
         }
-        return itemRepository.updateItem(item1);
+
+        Item updatedItem = itemRepository.updateItem(item1);
+        return ItemMappers.toItemDto(updatedItem);
     }
 
     private void checkItemId(Long itemId) {

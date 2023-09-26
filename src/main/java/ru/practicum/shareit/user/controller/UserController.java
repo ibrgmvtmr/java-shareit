@@ -5,12 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMappers;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -24,23 +22,23 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> getUsers() {
-        return userService.getUsers().stream().map(UserMappers::toUserDto).collect(Collectors.toList());
+        return userService.getUsers();
     }
 
     @GetMapping("/{id}")
     public UserDto getUser(@PathVariable Long id) {
-        return UserMappers.toUserDto(userService.getUser(id));
+        return userService.getUser(id);
     }
 
     @PostMapping
     public UserDto createUser(@RequestBody @Valid UserDto user) {
-        return UserMappers.toUserDto(userService.createUser(UserMappers.toUser(user)));
+        return userService.createUser(user);
     }
 
     @PatchMapping("/{id}")
     public UserDto update(@RequestBody UserDto user, @PathVariable Long id) {
         user.setId(id);
-        return UserMappers.toUserDto(userService.updateUser(UserMappers.toUser(user)));
+        return userService.updateUser(user);
     }
 
     @DeleteMapping("/{id}")
