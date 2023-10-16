@@ -8,11 +8,14 @@ import java.util.List;
 
 public interface BookingService {
     void delete(int id);
+
     BookingDto getBooking(BookingWithStateDto id);
 
     BookingDto create(BookingShortDto bookingShortDto, long userId);
-    BookingDto updateBookingStatus(BookingWithStateDto bookingWithStateDto);
-    List<BookingDto> getAllUserBookings(BookingWithStateDto bookingWithStateDto);
-    List<BookingDto> getAllOwnerItemBookings(BookingWithStateDto bookingWithStateDto);
 
+    BookingDto updateBookingStatus(BookingWithStateDto bookingWithStateDto);
+
+    List<BookingDto> getAllUserBookings(BookingWithStateDto bookingWithStateDto);
+
+    List<BookingDto> getAllOwnerItemBookings(BookingWithStateDto bookingWithStateDto);
 }
