@@ -3,14 +3,13 @@ package ru.practicum.shareit.item.dto;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.validation.annotation.Validated;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
+import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
 @Builder
 @Validated
@@ -28,5 +27,11 @@ public class ItemDto {
     @NotNull
     private Boolean available;
 
-    private Long owner;
+    private Long ownerId;
+
+    private BookingShortDto lastBooking;
+
+    private BookingShortDto nextBooking;
+
+    private List<CommentAnswerDto> comments;
 }

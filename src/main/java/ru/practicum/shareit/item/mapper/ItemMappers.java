@@ -11,17 +11,21 @@ public class ItemMappers {
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
-                .owner(item.getOwner())
-                .available(item.getIsAvailable())
+                .ownerId(item.getOwnerId())
+                .available(item.getAvailable())
+                .lastBooking(item.getLastBooking())
+                .nextBooking(item.getNextBooking())
+                .comments(item.getComments())
                 .build();
     }
 
-    public static Item toItem(ItemDto itemDto) {
+    public static Item toItem(ItemDto item) {
         return Item.builder()
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .owner(itemDto.getOwner())
-                .isAvailable(itemDto.getAvailable())
-                .id(itemDto.getId()).build();
+                .name(item.getName())
+                .description(item.getDescription())
+                .ownerId(item.getOwnerId())
+                .available(item.getAvailable())
+                .id(item.getId())
+                .build();
     }
 }
