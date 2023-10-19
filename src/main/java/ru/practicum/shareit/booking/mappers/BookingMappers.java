@@ -1,15 +1,18 @@
 package ru.practicum.shareit.booking.mappers;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.dto.BookingWithStateDto;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Objects;
 
+@UtilityClass
 public class BookingMappers {
     public static BookingDto toBookingDto(Booking booking) {
         return BookingDto.builder()

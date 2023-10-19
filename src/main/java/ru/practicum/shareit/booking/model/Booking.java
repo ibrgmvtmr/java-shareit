@@ -34,7 +34,7 @@ public class Booking {
     private long bookerId;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 10)
+    @Column(length = 10, nullable = false)
     private BookingStatus status;
 
 }

@@ -40,7 +40,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getItems(long userId) {
-        return itemRepository.findAllByOwnerId(userId).stream()
+        return itemRepository.findItemsByOwnerId(userId).stream()
                 .peek(item -> {
                     setLastFutureBooking(item, userId);
                     setItemComments(item);
@@ -50,7 +50,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void setItemComments(Item item) {
-        List<CommentAnswerDto> comments = commentRepository.findAllByItemId(item.getId()).get().stream().map(CommentMappers::toAnswerDto).collect(Collectors.toList());
+        List<CommentAnswerDto> comments = commentRepository.findAllByItemId(item.getId()).stream().map(CommentMappers::toAnswerDto).collect(Collectors.toList());
         item.setComments(comments);
     }
 
@@ -124,13 +124,11 @@ public class ItemServiceImpl implements ItemService {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return itemRepository.findAll().stream()
-                .filter(item -> item.getName().toLowerCase()
-                        .contains(text.toLowerCase()) || item.getDescription().toLowerCase().contains(text.toLowerCase()))
-                .filter(Item::getAvailable)
+        return itemRepository.searchByText(text).stream()
                 .map(ItemMappers::toItemDto)
                 .collect(Collectors.toList());
     }
+
 
     @Override
     public CommentAnswerDto postItemComment(@Valid CommentDto commentDto) {
