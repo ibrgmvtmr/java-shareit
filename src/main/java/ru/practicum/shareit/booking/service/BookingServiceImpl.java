@@ -33,19 +33,18 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getAllUserBookings(BookingWithStateDto bookingWithStateDto) {
-        long userId = bookingWithStateDto.getUserId();
-        BookingState state = BookingState.valueOf(bookingWithStateDto.getState());
-
-        userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с таким id не найден"));
-
         try {
+            long userId = bookingWithStateDto.getUserId();
+            BookingState state = BookingState.valueOf(bookingWithStateDto.getState());
+
+            userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с таким id не найден"));
             switch (state) {
                 case ALL:
-                    return bookingRepository.findAllByBookerIdOrderByIdDesc(userId).stream()
+                    return bookingRepository.findAllByBookerId(userId, sortBy(Sort.Direction.DESC, "id")).stream()
                             .map(BookingMappers::toBookingDto)
                             .collect(Collectors.toList());
                 case FUTURE:
-                    return bookingRepository.findAllByBookerIdAndStartIsAfterOrderByStartDesc(userId, LocalDateTime.now())
+                    return bookingRepository.findAllByBookerIdAndStartIsAfter(userId, LocalDateTime.now(), sortBy(Sort.Direction.DESC, "start"))
                             .stream()
                             .map(BookingMappers::toBookingDto)
                             .collect(Collectors.toList());
@@ -73,36 +72,40 @@ public class BookingServiceImpl implements BookingService {
                     throw new UnsupportedStateException("Unknown state: " + state);
             }
         } catch (IllegalArgumentException e) {
-            throw new IncorrectStateException("Incorrect booking state: " + state);
+            throw new IncorrectStateException("Incorrect booking state");
         }
     }
 
     @Override
     public List<BookingDto> getAllOwnerItemBookings(BookingWithStateDto bookingWithStateDto) {
-        long userId = bookingWithStateDto.getUserId();
-        BookingState state = BookingState.valueOf(bookingWithStateDto.getState());
-        int zeroItem = 0;
-        long countItemUser = itemRepository.countItemByOwnerId(userId);
+        try {
+            long userId = bookingWithStateDto.getUserId();
+            BookingState state = BookingState.valueOf(bookingWithStateDto.getState());
+            int zeroItem = 0;
+            long countItemUser = itemRepository.countItemByOwnerId(userId);
 
-        if (countItemUser > zeroItem) {
-            switch (state) {
-                case ALL:
-                    return bookingRepository.findAllByItemOwnerId(userId, sortBy(Sort.Direction.DESC, "id")).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
-                case FUTURE:
-                    return bookingRepository.findAllByItemOwnerIdAndStartIsAfter(userId, LocalDateTime.now(), sortBy(Sort.Direction.DESC, "start")).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
-                case WAITING:
-                    return bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingStatus.WAITING).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
-                case REJECTED:
-                    return bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingStatus.REJECTED).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
-                case CURRENT:
-                    return bookingRepository.findAllByItemOwnerIdAndStartIsBeforeAndEndIsAfter(userId, LocalDateTime.now(), LocalDateTime.now()).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
-                case PAST:
-                    return bookingRepository.findAllByItemOwnerIdAndStatusAndStartIsBeforeAndEndIsBefore(userId, BookingStatus.APPROVED, LocalDateTime.now(), LocalDateTime.now(), sortBy(Sort.Direction.DESC, "id")).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
-                default:
-                    throw new UnsupportedStateException("Unknown state: " + state);
+            if (countItemUser > zeroItem) {
+                switch (state) {
+                    case ALL:
+                        return bookingRepository.findAllByItemOwnerId(userId, sortBy(Sort.Direction.DESC, "id")).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
+                    case FUTURE:
+                        return bookingRepository.findAllByItemOwnerIdAndStartIsAfter(userId, LocalDateTime.now(), sortBy(Sort.Direction.DESC, "start")).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
+                    case WAITING:
+                        return bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingStatus.WAITING).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
+                    case REJECTED:
+                        return bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingStatus.REJECTED).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
+                    case CURRENT:
+                        return bookingRepository.findAllByItemOwnerIdAndStartIsBeforeAndEndIsAfter(userId, LocalDateTime.now(), LocalDateTime.now()).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
+                    case PAST:
+                        return bookingRepository.findAllByItemOwnerIdAndStatusAndStartIsBeforeAndEndIsBefore(userId, BookingStatus.APPROVED, LocalDateTime.now(), LocalDateTime.now(), sortBy(Sort.Direction.DESC, "id")).stream().map(BookingMappers::toBookingDto).collect(Collectors.toList());
+                    default:
+                        throw new UnsupportedStateException("Unknown state: " + state);
+                }
             }
+            throw new UnsupportedStateException("Unknown state: UNSUPPORTED_STATUS");
+        } catch (IllegalArgumentException e) {
+            throw new IncorrectStateException("Incorrect booking state");
         }
-        throw new UnsupportedStateException("Unknown state: UNSUPPORTED_STATUS");
     }
 
 

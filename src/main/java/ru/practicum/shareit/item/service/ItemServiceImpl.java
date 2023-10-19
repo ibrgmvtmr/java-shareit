@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.mappers.BookingMappers;
@@ -55,8 +56,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void setLastFutureBooking(Item item, long userId) {
-        BookingShortDto lastBooking = BookingMappers.toBookingShortDto(bookingRepository.findFirstByItemOwnerIdAndStartIsBeforeAndStatusOrderByStartDesc(userId, LocalDateTime.now(), BookingStatus.APPROVED));
-        BookingShortDto futureBooking = BookingMappers.toBookingShortDto(bookingRepository.findFirstByItemOwnerIdAndStartIsAfterAndStatusOrderByStartAsc(userId, LocalDateTime.now(), BookingStatus.APPROVED));
+        BookingShortDto lastBooking = BookingMappers.toBookingShortDto(bookingRepository.findFirstByItemOwnerIdAndStartIsBeforeAndStatus(userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.DESC, "start")));
+        BookingShortDto futureBooking = BookingMappers.toBookingShortDto(bookingRepository.findFirstByItemOwnerIdAndStartIsAfterAndStatus(userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.ASC, "start")));
         if (Objects.nonNull(lastBooking)) {
             if (item.getId().equals(lastBooking.getItemId())) {
                 item.setLastBooking(lastBooking);
