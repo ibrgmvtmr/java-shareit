@@ -41,14 +41,44 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getItems(long userId) {
-        return itemRepository.findItemsByOwnerId(userId).stream()
-                .peek(item -> {
-                    setLastFutureBooking(item, userId);
-                    setItemComments(item);
-                })
-                .map(ItemMappers::toItemDto)
+        List<Item> items = itemRepository.findItemsByOwnerId(userId);
+        List<ItemDto> itemDtos = new ArrayList<>();
+
+        for (Item item : items) {
+            List<CommentAnswerDto> comments = getCommentsForItem(item);
+            BookingShortDto lastBooking = getLastBookingForItem(item, userId);
+            BookingShortDto nextBooking = getNextBookingForItem(item, userId);
+
+            ItemDto itemDto = ItemMappers.toItemDto(item);
+            itemDto.setComments(comments);
+            itemDto.setLastBooking(lastBooking);
+            itemDto.setNextBooking(nextBooking);
+
+            itemDtos.add(itemDto);
+        }
+
+        return itemDtos;
+    }
+
+    private List<CommentAnswerDto> getCommentsForItem(Item item) {
+        return commentRepository.findAllByItemId(item.getId())
+                .stream()
+                .map(CommentMappers::toAnswerDto)
                 .collect(Collectors.toList());
     }
+
+    private BookingShortDto getLastBookingForItem(Item item, long userId) {
+        return BookingMappers.toBookingShortDto(
+                bookingRepository.findFirstByItemOwnerIdAndStartIsBeforeAndStatus(
+                        userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.DESC, "start")));
+    }
+
+    private BookingShortDto getNextBookingForItem(Item item, long userId) {
+        return BookingMappers.toBookingShortDto(
+                bookingRepository.findFirstByItemOwnerIdAndStartIsAfterAndStatus(
+                        userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.ASC, "start")));
+    }
+
 
     private void setItemComments(Item item) {
         List<CommentAnswerDto> comments = commentRepository.findAllByItemId(item.getId()).stream().map(CommentMappers::toAnswerDto).collect(Collectors.toList());

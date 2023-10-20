@@ -22,7 +22,7 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 1000, nullable = false)
+    @Column(nullable = false)
     private String text;
 
     @JoinColumn(name = "item_id", referencedColumnName = "item_id", nullable = false)

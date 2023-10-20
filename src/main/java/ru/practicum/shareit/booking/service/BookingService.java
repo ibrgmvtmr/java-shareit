@@ -7,7 +7,6 @@ import ru.practicum.shareit.booking.dto.BookingWithStateDto;
 import java.util.List;
 
 public interface BookingService {
-    void delete(int id);
 
     BookingDto getBooking(BookingWithStateDto id);
 

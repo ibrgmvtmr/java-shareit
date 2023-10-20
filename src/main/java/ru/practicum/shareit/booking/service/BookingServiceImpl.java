@@ -173,11 +173,6 @@ public class BookingServiceImpl implements BookingService {
         throw new UnsupportedStateException("Unknown state: UNSUPPORTED_STATUS");
     }
 
-    @Override
-    public void delete(int id) {
-
-    }
-
     private void validate(Booking booking, long userId) {
         userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         if (Objects.equals(booking.getBookerId(), userId) || Objects.equals(booking.getItem().getOwnerId(), userId)) {
