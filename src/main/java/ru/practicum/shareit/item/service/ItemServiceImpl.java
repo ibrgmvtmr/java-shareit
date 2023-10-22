@@ -47,14 +47,15 @@ public class ItemServiceImpl implements ItemService {
         for (Item item : items) {
             ItemDto itemDto = ItemMappers.toItemDto(item);
 
-            BookingShortDto lastBooking = getLastBooking(userId, item.getId());
-            BookingShortDto nextBooking = getNextBooking(userId, item.getId());
+            BookingShortDto lastBooking = getLastBooking(userId);
+            BookingShortDto nextBooking = getNextBooking(userId);
             List<CommentAnswerDto> comments = getComments(item.getId());
 
-            if (item.getId().equals(lastBooking.getItemId())) {
+            if (lastBooking != null && item.getId().equals(lastBooking.getItemId())) {
                 itemDto.setLastBooking(lastBooking);
             }
-            if (item.getId().equals(nextBooking.getItemId())) {
+
+            if (nextBooking != null && item.getId().equals(nextBooking.getItemId())) {
                 itemDto.setNextBooking(nextBooking);
             }
             itemDto.setComments(comments);
@@ -72,12 +73,12 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    private BookingShortDto getLastBooking(long userId, long itemId) {
+    private BookingShortDto getLastBooking(long userId) {
         return BookingMappers.toBookingShortDto(bookingRepository
                 .findFirstByItemOwnerIdAndStartIsBeforeAndStatus(userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.DESC, "start")));
     }
 
-    private BookingShortDto getNextBooking(long userId, long itemId) {
+    private BookingShortDto getNextBooking(long userId) {
         return BookingMappers.toBookingShortDto(bookingRepository
                 .findFirstByItemOwnerIdAndStartIsAfterAndStatus(userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.ASC, "start")));
     }
@@ -88,8 +89,8 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с таким id не найдена"));
         ItemDto itemDto = ItemMappers.toItemDto(item);
 
-        BookingShortDto lastBooking = getLastBooking(userId, itemId);
-        BookingShortDto nextBooking = getNextBooking(userId, itemId);
+        BookingShortDto lastBooking = getLastBooking(userId);
+        BookingShortDto nextBooking = getNextBooking(userId);
         List<CommentAnswerDto> comments = getComments(itemId);
 
         itemDto.setLastBooking(lastBooking);
