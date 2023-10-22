@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
-    @Query("SELECT i FROM Item i WHERE i.ownerId = :userId")
+    @Query("SELECT i FROM Item i WHERE i.owner.id = :userId")
     List<Item> findItemsByOwnerId(@Param("userId") long userId);
 
     @Query("SELECT i FROM Item i WHERE LOWER(i.name) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(i.description) LIKE LOWER(CONCAT('%', :text, '%')) AND i.available = true")

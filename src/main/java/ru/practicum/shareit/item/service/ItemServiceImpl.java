@@ -132,7 +132,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void validation(Long userId, Long itemId) {
-        if (!Objects.equals(userId, itemRepository.findById(itemId).orElseThrow().getOwnerId())) {
+        if (!Objects.equals(userId, itemRepository.findById(itemId).orElseThrow().getOwner().getId())) {
             throw new AccessDenideException("Пльзователю запрещено менять этот item");
         }
     }

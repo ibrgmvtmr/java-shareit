@@ -128,7 +128,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingTimeException("Неверное время бронирования");
         }
         Item item = itemRepository.findById(booking.getItem().getId()).orElseThrow(() -> new NotFoundException("Вещь не найдена"));
-        if (booking.getBookerId() == item.getOwnerId()) {
+        if (booking.getBookerId() == item.getOwner().getId()) {
             throw new OwnerHasNoRightsException("Владелец не может бронировать свою вещь");
         }
         if (item.getAvailable().equals(false)) {
@@ -150,7 +150,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         if (status.equals("true")) {
-            if (Objects.equals(booking.getItem().getOwnerId(), userId)) {
+            if (Objects.equals(booking.getItem().getOwner().getId(), userId)) {
                 booking.setStatus(BookingStatus.APPROVED);
                 bookingRepository.save(booking);
                 return BookingMappers.toBookingDto(booking);
@@ -160,7 +160,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         if (status.equals("false")) {
-            if (Objects.equals(booking.getItem().getOwnerId(), userId)) {
+            if (Objects.equals(booking.getItem().getOwner().getId(), userId)) {
                 booking.setStatus(BookingStatus.REJECTED);
             } else if (Objects.equals(booking.getBookerId(), userId)) {
                 booking.setStatus(BookingStatus.CANCELED);
@@ -175,7 +175,7 @@ public class BookingServiceImpl implements BookingService {
 
     private void validate(Booking booking, long userId) {
         userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        if (Objects.equals(booking.getBookerId(), userId) || Objects.equals(booking.getItem().getOwnerId(), userId)) {
+        if (Objects.equals(booking.getBookerId(), userId) || Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             return;
         }
         throw new NotFoundException("Нет доступа для просмотра");
