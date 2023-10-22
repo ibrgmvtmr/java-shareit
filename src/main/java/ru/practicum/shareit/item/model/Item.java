@@ -4,12 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.booking.dto.BookingShortDto;
-import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.dto.CommentAnswerDto;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Table(name = "items")
@@ -35,17 +31,4 @@ public class Item {
 
     @JoinColumn(name = "owner_id", nullable = false)
     private Long ownerId;
-
-    @OneToOne
-    @Transient
-    private Booking booking;
-
-    @Transient
-    private List<CommentAnswerDto> comments;
-
-    @Transient
-    private BookingShortDto lastBooking;
-
-    @Transient
-    private BookingShortDto nextBooking;
 }

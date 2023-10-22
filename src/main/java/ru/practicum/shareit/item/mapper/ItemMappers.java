@@ -13,9 +13,6 @@ public class ItemMappers {
                 .description(item.getDescription())
                 .ownerId(item.getOwnerId())
                 .available(item.getAvailable())
-                .lastBooking(item.getLastBooking())
-                .nextBooking(item.getNextBooking())
-                .comments(item.getComments())
                 .build();
     }
 

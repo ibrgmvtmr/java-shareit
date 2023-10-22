@@ -45,14 +45,19 @@ public class ItemServiceImpl implements ItemService {
         List<ItemDto> itemDtos = new ArrayList<>();
 
         for (Item item : items) {
-            List<CommentAnswerDto> comments = getCommentsForItem(item);
-            BookingShortDto lastBooking = getLastBookingForItem(item, userId);
-            BookingShortDto nextBooking = getNextBookingForItem(item, userId);
-
             ItemDto itemDto = ItemMappers.toItemDto(item);
+
+            BookingShortDto lastBooking = getLastBooking(userId, item.getId());
+            BookingShortDto nextBooking = getNextBooking(userId, item.getId());
+            List<CommentAnswerDto> comments = getComments(item.getId());
+
+            if (item.getId().equals(lastBooking.getItemId())) {
+                itemDto.setLastBooking(lastBooking);
+            }
+            if (item.getId().equals(nextBooking.getItemId())) {
+                itemDto.setNextBooking(nextBooking);
+            }
             itemDto.setComments(comments);
-            itemDto.setLastBooking(lastBooking);
-            itemDto.setNextBooking(nextBooking);
 
             itemDtos.add(itemDto);
         }
@@ -60,52 +65,38 @@ public class ItemServiceImpl implements ItemService {
         return itemDtos;
     }
 
-    private List<CommentAnswerDto> getCommentsForItem(Item item) {
-        return commentRepository.findAllByItemId(item.getId())
+    private List<CommentAnswerDto> getComments(Long itemId) {
+        return commentRepository.findAllByItemId(itemId)
                 .stream()
                 .map(CommentMappers::toAnswerDto)
                 .collect(Collectors.toList());
     }
 
-    private BookingShortDto getLastBookingForItem(Item item, long userId) {
-        return BookingMappers.toBookingShortDto(
-                bookingRepository.findFirstByItemOwnerIdAndStartIsBeforeAndStatus(
-                        userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.DESC, "start")));
+    private BookingShortDto getLastBooking(long userId, long itemId) {
+        return BookingMappers.toBookingShortDto(bookingRepository
+                .findFirstByItemOwnerIdAndStartIsBeforeAndStatus(userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.DESC, "start")));
     }
 
-    private BookingShortDto getNextBookingForItem(Item item, long userId) {
-        return BookingMappers.toBookingShortDto(
-                bookingRepository.findFirstByItemOwnerIdAndStartIsAfterAndStatus(
-                        userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.ASC, "start")));
+    private BookingShortDto getNextBooking(long userId, long itemId) {
+        return BookingMappers.toBookingShortDto(bookingRepository
+                .findFirstByItemOwnerIdAndStartIsAfterAndStatus(userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.ASC, "start")));
     }
 
-
-    private void setItemComments(Item item) {
-        List<CommentAnswerDto> comments = commentRepository.findAllByItemId(item.getId()).stream().map(CommentMappers::toAnswerDto).collect(Collectors.toList());
-        item.setComments(comments);
-    }
-
-    private void setLastFutureBooking(Item item, long userId) {
-        BookingShortDto lastBooking = BookingMappers.toBookingShortDto(bookingRepository.findFirstByItemOwnerIdAndStartIsBeforeAndStatus(userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.DESC, "start")));
-        BookingShortDto futureBooking = BookingMappers.toBookingShortDto(bookingRepository.findFirstByItemOwnerIdAndStartIsAfterAndStatus(userId, LocalDateTime.now(), BookingStatus.APPROVED, Sort.by(Sort.Direction.ASC, "start")));
-        if (Objects.nonNull(lastBooking)) {
-            if (item.getId().equals(lastBooking.getItemId())) {
-                item.setLastBooking(lastBooking);
-            }
-        }
-        if (Objects.nonNull(futureBooking)) {
-            if (item.getId().equals(futureBooking.getItemId())) {
-                item.setNextBooking(futureBooking);
-            }
-        }
-    }
 
     @Override
     public ItemDto getItem(long itemId, long userId) {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с таким id не найдена"));
-        setItemComments(item);
-        setLastFutureBooking(item, userId);
-        return ItemMappers.toItemDto(item);
+        ItemDto itemDto = ItemMappers.toItemDto(item);
+
+        BookingShortDto lastBooking = getLastBooking(userId, itemId);
+        BookingShortDto nextBooking = getNextBooking(userId, itemId);
+        List<CommentAnswerDto> comments = getComments(itemId);
+
+        itemDto.setLastBooking(lastBooking);
+        itemDto.setNextBooking(nextBooking);
+        itemDto.setComments(comments);
+
+        return itemDto;
     }
 
 
