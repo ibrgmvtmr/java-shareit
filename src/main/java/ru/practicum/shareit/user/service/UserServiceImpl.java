@@ -5,12 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.DataAlreadyExistException;
 import ru.practicum.shareit.exceptions.NotFoundException;
-import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMappers;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -21,54 +21,37 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final ItemRepository itemRepository;
 
     @Override
     public List<UserDto> getUsers() {
-        return userRepository.getUsers().stream().map(UserMappers::toUserDto).collect(Collectors.toList());
+        return userRepository.findAll().stream().map(UserMappers::toUserDto).collect(Collectors.toList());
     }
 
     @Override
     public UserDto getUser(Long userId) {
-        User user = userRepository.getUser(userId);
-        if (Objects.isNull(user)) {
-            throw new NotFoundException("пользователь с таким id не найден");
-        }
-
-        return UserMappers.toUserDto(userRepository.getUser(userId));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("пользователь с таким id не найден"));
+        return UserMappers.toUserDto(user);
     }
 
     @Override
-    public UserDto createUser(UserDto userDto) {
-        User user = UserMappers.toUser(userDto);
-        validation(user);
-
-        User createdUser = userRepository.createUser(user);
-        return UserMappers.toUserDto(createdUser);
-    }
-
-    private void validation(User user) {
-        if (userRepository.getUsers().stream().anyMatch(user1 -> Objects.equals(user1.getEmail(), user.getEmail()))) {
-            throw new DataAlreadyExistException("Пользователь с таким email уже существует");
-        }
-
+    public UserDto createUser(@Valid UserDto userDto) {
+        User user = userRepository.save(UserMappers.toUser(userDto));
+        return UserMappers.toUserDto(user);
     }
 
     @Override
     public UserDto updateUser(UserDto userDto) {
         User user = UserMappers.toUser(userDto);
-        if (userRepository.getUser(user.getId()) == null) {
-            throw new NotFoundException("пользователь с таким id не найден");
-        }
+        getUser(user.getId());
         validateEmptyField(user);
-        if (userRepository.getUsers().stream().anyMatch(user1 -> Objects.equals(user1.getEmail(), user.getEmail()) && !Objects.equals(user.getId(), user1.getId()))) {
+        if (userRepository.findAll().stream().anyMatch(user1 -> Objects.equals(user1.getEmail(), user.getEmail()) && !Objects.equals(user.getId(), user1.getId()))) {
             throw new DataAlreadyExistException("Пользователь с таким email уже существует");
         }
-        return UserMappers.toUserDto(userRepository.updateUser(user));
+        return UserMappers.toUserDto(userRepository.save(user));
     }
 
     private void validateEmptyField(User user) {
-        User orig = userRepository.getUser(user.getId());
+        User orig = UserMappers.toUser(getUser(user.getId()));
 
         if (Objects.isNull(user.getName())) {
             user.setName(orig.getName());
@@ -80,11 +63,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(Long userId) {
-        if (userRepository.getUser(userId) == null) {
-            throw new NotFoundException("пользователь с таким id не найден");
-        }
-        userRepository.deleteUser(userId);
-        itemRepository.getItems().stream().filter(e -> Objects.equals(e.getOwner(), userId)).peek(e -> itemRepository.deleteItem(e.getId())).close();
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 }
