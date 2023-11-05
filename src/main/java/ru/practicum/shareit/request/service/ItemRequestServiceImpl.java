@@ -25,6 +25,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     private final ItemRequestRepository itemRequestRepository;
     private final UserRepository userRepository;
+
     @Override
     public RequestDto get(long userId, int id) {
         userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
