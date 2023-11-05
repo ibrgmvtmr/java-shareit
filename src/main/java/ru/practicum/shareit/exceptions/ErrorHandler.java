@@ -66,4 +66,10 @@ public class ErrorHandler {
     public ErrorResponse ownerHasNoRightsException(OwnerHasNoRightsException ownerHasNoRightsException) {
         return new ErrorResponse(ownerHasNoRightsException.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse badPageArgumentException(BadPageArgumentException badPageArgumentException) {
+        return new ErrorResponse(badPageArgumentException.getMessage());
+    }
 }

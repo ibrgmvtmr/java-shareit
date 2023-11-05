@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
@@ -8,10 +10,7 @@ import ru.practicum.shareit.booking.mappers.BookingMappers;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exceptions.AccessDenideException;
-import ru.practicum.shareit.exceptions.NotFoundException;
-import ru.practicum.shareit.exceptions.OwnerHasNotItemException;
-import ru.practicum.shareit.exceptions.TimeException;
+import ru.practicum.shareit.exceptions.*;
 import ru.practicum.shareit.item.dto.CommentAnswerDto;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -25,9 +24,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,8 +37,17 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
 
     @Override
-    public List<ItemDto> getItems(long userId) {
-        List<Item> items = itemRepository.findItemsByOwnerId(userId);
+    public List<ItemDto> getItems(long userId, Integer from, Integer size) {
+        if (Objects.isNull(from) || Objects.isNull(size)) {
+            return Collections.emptyList();
+        }
+
+        if (from < 0 || size <= 0) {
+            throw new BadPageArgumentException("такой страницы не существует");
+        }
+        PageRequest pageRequest = PageRequest.of(from > 0 ? from / size : 0, size, Sort.Direction.ASC, "id");
+
+        Page<Item> items = itemRepository.findItemsByOwnerId(userId, pageRequest);
         List<ItemDto> itemDtos = new ArrayList<>();
 
         for (Item item : items) {
@@ -143,15 +149,18 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> search(String text) {
+    public List<ItemDto> search(String text, Integer from, Integer size) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return itemRepository.searchByText(text).stream()
-                .map(ItemMappers::toItemDto)
-                .collect(Collectors.toList());
-    }
+        if (from < 0 || size <= 0) {
+            throw new BadPageArgumentException("такой страницы не существует");
+        }
 
+        List<Item> items = itemRepository.searchByText(text, PageRequest.of(from > 0 ? from / size : 0, size, Sort.Direction.ASC, "id")).getContent();
+
+        return items.stream().filter(e -> e.getAvailable().equals(true)).map(ItemMappers::toItemDto).collect(Collectors.toList());
+    }
 
     @Override
     public CommentAnswerDto postItemComment(@Valid CommentDto commentDto) {
