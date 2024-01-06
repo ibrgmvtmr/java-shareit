@@ -21,6 +21,10 @@ public class CommentMappers {
     }
 
     public static CommentAnswerDto toAnswerDto(Comment comment) {
+        if (comment.getId() == null) {
+            throw new IllegalArgumentException("Comment id is null");
+        }
+
         return CommentAnswerDto.builder()
                 .id(comment.getId())
                 .created(comment.getCreated())
