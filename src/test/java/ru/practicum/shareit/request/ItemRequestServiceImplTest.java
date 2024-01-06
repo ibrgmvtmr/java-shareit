@@ -77,7 +77,7 @@ public class ItemRequestServiceImplTest {
         itemRequests = itemRequestService.getAll(1, 1, null);
         Assertions.assertEquals(0, itemRequests.size());
         itemRequests = itemRequestService.getAll(1, null, 1);
-        Assertions.assertEquals(0, itemRequests.size());
+        Assertions.assertEquals(0, itemRequests.size());//
     }
 
     @Test
