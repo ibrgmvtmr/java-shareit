@@ -23,35 +23,43 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public List<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.getItems(userId);
+    public List<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") long userId,
+                                  @RequestParam(defaultValue = "0", required = false) Integer from,
+                                  @RequestParam(defaultValue = "10", required = false) Integer size) {
+        return itemService.getItems(userId, from, size);
     }
 
     @GetMapping("/{id}")
-    public ItemDto getItem(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long id) {
+    public ItemDto getItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                           @PathVariable Long id) {
         return itemService.getItem(id, userId);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteById(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long id) {
+    public void deleteById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                           @PathVariable Long id) {
         itemService.deleteItem(id);
     }
 
     @PatchMapping("/{id}")
-    public ItemDto update(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestBody ItemDto itemDto, @PathVariable long id) {
+    public ItemDto update(@RequestHeader("X-Sharer-User-Id") Long userId,
+                          @RequestBody ItemDto itemDto, @PathVariable long id) {
         itemDto.setId(id);
         return itemService.updateItem(itemDto, userId);
     }
 
     @PostMapping
-    public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestBody @Valid ItemDto itemDto) {
+    public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                              @RequestBody @Valid ItemDto itemDto) {
         userService.getUser(userId);
         return itemService.createItem(itemDto, userId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> search(@RequestParam String text) {
-        return itemService.search(text);
+    public List<ItemDto> search(@RequestParam String text,
+                                @RequestParam(defaultValue = "0", required = false) Integer from,
+                                @RequestParam(defaultValue = "10", required = false) Integer size) {
+        return itemService.search(text, from, size);
     }
 
     @PostMapping("{itemId}/comment")

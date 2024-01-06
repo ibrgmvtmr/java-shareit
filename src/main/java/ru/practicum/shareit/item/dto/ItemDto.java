@@ -1,7 +1,9 @@
 package ru.practicum.shareit.item.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 
@@ -13,6 +15,8 @@ import java.util.List;
 @Data
 @Builder
 @Validated
+@AllArgsConstructor
+@NoArgsConstructor
 public class ItemDto {
 
     @PositiveOrZero
@@ -34,4 +38,5 @@ public class ItemDto {
     private BookingShortDto nextBooking;
 
     private List<CommentAnswerDto> comments;
+    private Long requestId;
 }

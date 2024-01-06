@@ -14,7 +14,7 @@ public interface BookingService {
 
     BookingDto updateBookingStatus(BookingWithStateDto bookingWithStateDto);
 
-    List<BookingDto> getAllUserBookings(BookingWithStateDto bookingWithStateDto);
+    List<BookingDto> getAllUserBookings(BookingWithStateDto bookingWithStateDto, Integer from, Integer size);
 
-    List<BookingDto> getAllOwnerItemBookings(BookingWithStateDto bookingWithStateDto);
+    List<BookingDto> getAllOwnerItemBookings(BookingWithStateDto bookingWithStateDto, Integer from, Integer size);
 }
