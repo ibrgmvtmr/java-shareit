@@ -50,19 +50,19 @@ public class ItemServiceImplTest {
 
     @Test
     public void getAllWithFromSizeNullTest() {
-        List<ItemDto> itemDtoList = itemService.getItems(1, null, 1);
+        List<ItemDto> itemDtoList = itemService.getItems(1L, null, 1);
         assertEquals(0, itemDtoList.size());
-        itemDtoList = itemService.getItems(1, 1, null);
+        itemDtoList = itemService.getItems(1L, 1, null);
         assertEquals(0, itemDtoList.size());
-        itemDtoList = itemService.getItems(1, null, null);
+        itemDtoList = itemService.getItems(1L, null, null);
         assertEquals(0, itemDtoList.size());
     }
 
     @Test
     public void getAllWithFromSizeZeroBadArgumentsPaginationExceptionTest() {
-        assertThrows(BadPageArgumentException.class, () -> itemService.getItems(1, 0, 0));
-        assertThrows(BadPageArgumentException.class, () -> itemService.getItems(1, -1, 0));
-        assertThrows(BadPageArgumentException.class, () -> itemService.getItems(1, -1, 1));
+        assertThrows(BadPageArgumentException.class, () -> itemService.getItems(1L, 0, 0));
+        assertThrows(BadPageArgumentException.class, () -> itemService.getItems(1L, -1, 0));
+        assertThrows(BadPageArgumentException.class, () -> itemService.getItems(1L, -1, 1));
     }
 
     @Test
@@ -94,8 +94,8 @@ public class ItemServiceImplTest {
         when(itemRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(itemOne));
         when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user));
         when(itemRepository.save(Mockito.any())).thenReturn(itemOne);
-        ItemDto itemDto1 = itemService.updateItem(itemDto, 1);
-        assertNotNull(itemDto1);
+        ItemDto itemDtoOne = itemService.updateItem(itemDto, 1L);
+        assertNotNull(itemDtoOne);
     }
 
     @Test
@@ -107,7 +107,7 @@ public class ItemServiceImplTest {
         when(itemRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(itemOne));
         when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user));
         when(itemRepository.save(Mockito.any())).thenReturn(itemOne);
-        ItemDto itemDto1 = itemService.updateItem(itemDto, 1);
+        ItemDto itemDto1 = itemService.updateItem(itemDto, 1L);
         assertNotNull(itemDto1);
     }
 
@@ -129,12 +129,12 @@ public class ItemServiceImplTest {
         when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user));
         when(itemRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(itemOne));
         when(commentRepository.findAllByItemId(Mockito.anyLong())).thenReturn(Collections.emptyList());
-        ItemDto itemDto = itemService.getItem(1, 1);
+        ItemDto itemDto = itemService.getItem(1L, 1L);
         Assertions.assertNotNull(itemDto);
         when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
         when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user));
         when(itemRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
-        Assertions.assertThrows(NotFoundException.class, () -> itemService.getItem(1, 1));
+        Assertions.assertThrows(NotFoundException.class, () -> itemService.getItem(1L, 1L));
     }
 
     @Test
@@ -144,46 +144,46 @@ public class ItemServiceImplTest {
         ItemDto itemDto = ItemMappers.toItemDto(itemOne);
         when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user));
         when(itemRepository.save(Mockito.any())).thenReturn(itemOne);
-        ItemDto itemDto1 = itemService.createItem(itemDto, 1);
+        ItemDto itemDto1 = itemService.createItem(itemDto, 1L);
         assertNotNull(itemDto1);
         when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
-        assertThrows(NotFoundException.class, () -> itemService.createItem(itemDto, 1));
+        assertThrows(NotFoundException.class, () -> itemService.createItem(itemDto, 1L));
     }
 
 
     @Test
     public void deleteTest() {
-        itemService.deleteItem(1);
+        itemService.deleteItem(1L);
         verify(itemRepository, atMostOnce()).deleteById(Mockito.anyLong());
     }
 
     @Test
     public void postCommentThrowExceptionOwnerHasNotItem() {
-        CommentDto commentDto = CommentDto.builder().itemId(1).text("Text").id(1).build();
+        CommentDto commentDto = CommentDto.builder().itemId(1L).text("Text").id(1L).build();
         when(bookingRepository.findFirstByBookerIdAndItemIdAndStatusOrderByEndAsc(Mockito.anyLong(), Mockito.anyLong(), Mockito.any())).thenReturn(Optional.empty());
         assertThrows(OwnerHasNotItemException.class, () -> itemService.postItemComment(commentDto));
     }
 
     @Test
     public void postCommentNullBookingAndEndAfterLocalDateNow() {
-        Booking booking = Booking.builder().end(LocalDateTime.now().plusHours(2)).build();
-        CommentDto commentDto = CommentDto.builder().itemId(1).text("Text").id(1).build();
+        Booking booking = Booking.builder().end(LocalDateTime.now().plusHours(2L)).build();
+        CommentDto commentDto = CommentDto.builder().itemId(1L).text("Text").id(1L).build();
         when(bookingRepository.findFirstByBookerIdAndItemIdAndStatusOrderByEndAsc(Mockito.anyLong(), Mockito.anyLong(), Mockito.any())).thenReturn(Optional.ofNullable(booking));
         assertThrows(TimeException.class, () -> itemService.postItemComment(commentDto));
     }
 
     @Test
     public void postCommentSuccess() {
-        Booking booking = Booking.builder().end(LocalDateTime.now().minusHours(2)).build();
+        Booking booking = Booking.builder().end(LocalDateTime.now().minusHours(2L)).build();
 
-        CommentDto commentDto = CommentDto.builder().itemId(1).text("Text").id(1).build();
+        CommentDto commentDto = CommentDto.builder().itemId(1L).text("Text").id(1L).build();
 
         when(bookingRepository.findFirstByBookerIdAndItemIdAndStatusOrderByEndAsc(Mockito.anyLong(), Mockito.anyLong(), Mockito.any())).thenReturn(Optional.ofNullable(booking));
 
         when(commentRepository.save(any())).thenAnswer(invocation -> {
             Comment commentArgument = invocation.getArgument(0);
             Long idFromDto = commentDto.getId();
-            return Comment.builder().id(idFromDto).text(commentArgument.getText()).author(User.builder().id(1L).name("Name").build()).itemId(commentArgument.getItemId()).created(LocalDateTime.now().minusHours(2)).build();
+            return Comment.builder().id(idFromDto).text(commentArgument.getText()).author(User.builder().id(1L).name("Name").build()).itemId(commentArgument.getItemId()).created(LocalDateTime.now().minusHours(2L)).build();
         });
 
         when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(User.builder().id(1L).build()));
